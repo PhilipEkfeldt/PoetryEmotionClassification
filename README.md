@@ -1,2 +1,2 @@
 # PoetryEmotionClassification
-Classifying Sentiment in Poetry using Song Lyrics and Dual Attention Transfer Networks
+Classifying Emotion in Poetry using Song Lyrics and Dual Attention Transfer Networks
