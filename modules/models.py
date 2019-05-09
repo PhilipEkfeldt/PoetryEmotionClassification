@@ -25,9 +25,11 @@ class BiLSTMBaseline(nn.Module):
         self.lstm = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
         self.attention = SelfAttention(hidden_dim, v_dim)
         self.dropout_layer = F.dropout
-        self.hidden_layer = nn.Linear(hidden_dim*2, hidden_dim*2)
-        self.decoder = nn.Linear(hidden_dim*2, label_size)
-        self.softmax = torch.softmax
+        self.MLP = MLP(hidden_dim*2, label_size, dropout)
+        #elf.hidden_layer = nn.Linear(hidden_dim*2, hidden_dim*2)
+        #elf.decoder = nn.Linear(hidden_dim*2, label_size)
+        #elf.softmax = torch.softmax
+        #elf.tanh = torch.tanh
         
         self.hidden = self.init_hidden()
 
@@ -55,7 +57,30 @@ class BiLSTMBaseline(nn.Module):
         h, attention = self.attention(h, z.repeat(h.size()[0], 1, 1))
         H = h.sum(0)
         H = self.dropout_layer(H, p=self.dropout, training = self.training)
-        H = self.hidden_layer(H)
+        #H = self.tanh(self.hidden_layer(H))
+        #H = self.dropout_layer(H, p=self.dropout, training = self.training)
+        #out = self.softmax(self.decoder(H), 1)
+        out = self.MLP(H) 
+        return out
+
+class MLP(nn.Module):
+
+    def __init__(self, hidden_dim, label_size,
+                       dropout=0.5):
+      
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.dropout = dropout
+
+        self.dropout_layer = F.dropout
+        self.hidden_layer = nn.Linear(hidden_dim, hidden_dim)
+        self.decoder = nn.Linear(hidden_dim, label_size)
+        self.softmax = torch.softmax
+        self.tanh = torch.tanh
+
+    def forward(self, input):
+        
+        H = self.tanh(self.hidden_layer(input))
         H = self.dropout_layer(H, p=self.dropout, training = self.training)
         out = self.softmax(self.decoder(H), 1)
           
